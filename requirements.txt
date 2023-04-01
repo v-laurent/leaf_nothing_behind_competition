@@ -1,0 +1,6 @@
+numpy==1.23.0
+scikit-image==0.18.3
+torch
+torchvision
+
+git+https://github.com/Antzyx/yaecs.git

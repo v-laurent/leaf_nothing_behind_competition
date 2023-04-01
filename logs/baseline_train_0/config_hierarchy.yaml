@@ -1,0 +1,4 @@
+config_hierarchy:
+- C:\Users\Jules\PycharmProjects\leaf_nothing_behind_baseline\configs\default.yaml
+- paths_on_your_machine
+- train_config

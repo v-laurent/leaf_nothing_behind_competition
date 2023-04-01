@@ -1,0 +1,21 @@
+config_metadata: 'Saving time : Sat Mar 11 23:52:22 2023 (1678575142.8863435) ; Regime : auto-save'
+experiment_logs: logs/baseline_train
+experiment_purpose: Train a baseline model
+mode: train
+device: gpu
+tracker_config:
+  type:
+  - basic
+csv_path: C:\Users\Jules\Documents\Data\Competition2023\assignment-2023\image_series.csv
+batch_size: 16
+number_of_batches: -1
+shuffle_data: true
+num_workers: 4
+layers_channels:
+- 16
+- 16
+weights_path: null
+learning_rate: 0.001
+number_of_epochs: 5
+save_weights_under: weights
+save_infers_under: null

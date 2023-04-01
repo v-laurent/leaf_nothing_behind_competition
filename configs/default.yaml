@@ -1,0 +1,26 @@
+# General config
+experiment_logs: !type:(none,str) null
+experiment_purpose: !type:(none,str) null
+mode: !type:str "train"  # can be 'train' or 'infer'
+device: !type:str gpu  # can be 'gpu' or 'cpu'
+tracker_config: !type:dict
+  type: !type:str basic
+
+# Data config
+csv_path: !type:str ""
+batch_size: !type:int 16
+number_of_batches: !type:int -1
+shuffle_data: !type:bool true
+num_workers: !type:int 4
+
+# Model config
+layers_channels: !type:[int] [16, 16]
+weights_path: !type:(none,str) null
+
+# Training config
+learning_rate: !type:float 0.001
+number_of_epochs: !type:int 10
+save_weights_under: !type:str ""
+
+# Inference config
+save_infers_under: !type:str ""

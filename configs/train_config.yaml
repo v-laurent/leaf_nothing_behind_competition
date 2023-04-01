@@ -1,0 +1,11 @@
+# General config
+experiment_logs: "logs/baseline_train"
+experiment_purpose: "Train a baseline model"
+
+# Data config
+batch_size: 16
+num_workers: 4
+
+# Training config
+number_of_epochs: 5
+save_weights_under: "weights"

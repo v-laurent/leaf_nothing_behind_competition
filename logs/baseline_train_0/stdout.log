@@ -1,0 +1,35 @@
+2023-03-11 23:52:22,925 : [TRACKER] Starting experiment...
+
+2023-03-11 23:52:22,925 : [INFO] Starting training.
+2023-03-11 23:52:35,639 : [INFO] Performed batch 100/478
+2023-03-11 23:52:40,025 : [INFO] Performed batch 200/478
+2023-03-11 23:52:44,318 : [INFO] Performed batch 300/478
+2023-03-11 23:52:48,675 : [INFO] Performed batch 400/478
+2023-03-11 23:52:52,045 : [INFO] Performed batch 478/478
+2023-03-11 23:52:52,417 : [INFO] Epoch 1/5 : loss = 0.6833194408957383.
+2023-03-11 23:53:02,986 : [INFO] Performed batch 100/478
+2023-03-11 23:53:07,319 : [INFO] Performed batch 200/478
+2023-03-11 23:53:11,615 : [INFO] Performed batch 300/478
+2023-03-11 23:53:15,996 : [INFO] Performed batch 400/478
+2023-03-11 23:53:19,241 : [INFO] Performed batch 478/478
+2023-03-11 23:53:19,618 : [INFO] Epoch 2/5 : loss = 0.504229197738435.
+2023-03-11 23:53:30,016 : [INFO] Performed batch 100/478
+2023-03-11 23:53:34,296 : [INFO] Performed batch 200/478
+2023-03-11 23:53:38,594 : [INFO] Performed batch 300/478
+2023-03-11 23:53:42,873 : [INFO] Performed batch 400/478
+2023-03-11 23:53:46,225 : [INFO] Performed batch 478/478
+2023-03-11 23:53:46,603 : [INFO] Epoch 3/5 : loss = 0.4899847666951185.
+2023-03-11 23:53:57,031 : [INFO] Performed batch 100/478
+2023-03-11 23:54:01,325 : [INFO] Performed batch 200/478
+2023-03-11 23:54:05,702 : [INFO] Performed batch 300/478
+2023-03-11 23:54:10,102 : [INFO] Performed batch 400/478
+2023-03-11 23:54:13,591 : [INFO] Performed batch 478/478
+2023-03-11 23:54:13,987 : [INFO] Epoch 4/5 : loss = 0.4761976099740636.
+2023-03-11 23:54:24,314 : [INFO] Performed batch 100/478
+2023-03-11 23:54:28,684 : [INFO] Performed batch 200/478
+2023-03-11 23:54:33,006 : [INFO] Performed batch 300/478
+2023-03-11 23:54:37,225 : [INFO] Performed batch 400/478
+2023-03-11 23:54:40,522 : [INFO] Performed batch 478/478
+2023-03-11 23:54:40,926 : [INFO] Epoch 5/5 : loss = 0.47253792429787095.
+
+2023-03-11 23:54:40,931 : [TRACKER] Experiment has concluded !

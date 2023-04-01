@@ -1,0 +1,11 @@
+# General config
+experiment_logs: "logs/infer"
+experiment_purpose: "Predicting on test data"
+mode: infer
+
+# Data config
+batch_size: 256
+num_workers: 1
+
+# Model config
+weights_path: "logs/baseline_train_0/weights/epoch_4"
