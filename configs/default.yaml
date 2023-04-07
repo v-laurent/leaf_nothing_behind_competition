@@ -5,8 +5,10 @@ mode: !type:str "train"  # can be 'train' or 'infer'
 device: !type:str gpu  # can be 'gpu' or 'cpu'
 tracker_config: !type:dict
   type: !type:str basic
+model: !type:str ""
 
 # Data config
+data_loader: !type:str "baseline_dataloader"
 csv_path: !type:str ""
 batch_size: !type:int 16
 number_of_batches: !type:int -1

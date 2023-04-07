@@ -1,0 +1,16 @@
+# General config
+experiment_logs:  "logs/debug"
+experiment_purpose: "debugging"
+mode: "train"
+model: "S1ToS2Model"
+#weights_path: "logs/debug_0/weights/epoch_0"
+
+# Data config
+data_loader: "S1toS2Dataloader"
+batch_size: 16
+num_workers: 1
+
+# Training config
+number_of_epochs: 5
+save_weights_under: "weights"
+number_of_batches: 100

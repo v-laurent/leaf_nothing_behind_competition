@@ -1,0 +1,23 @@
+config_metadata: 'Saving time : Fri Apr  7 18:05:29 2023 (1680883529.104674) ; Regime : auto-save'
+experiment_logs: ''
+experiment_purpose: debugging
+mode: train
+device: gpu
+tracker_config:
+  type:
+  - basic
+model: S1ToS2Model
+data_loader: S1toS2Dataloader
+csv_path: C:\Users\Valen\OneDrive\Documents\KTH\leaf_nothing_behind\assignment-2023\image_series.csv
+batch_size: 16
+number_of_batches: 10
+shuffle_data: true
+num_workers: 1
+layers_channels:
+- 16
+- 16
+weights_path: null
+learning_rate: 0.001
+number_of_epochs: 5
+save_weights_under: weights
+save_infers_under: ''
