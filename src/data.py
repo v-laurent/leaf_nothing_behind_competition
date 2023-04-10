@@ -20,13 +20,9 @@ if TYPE_CHECKING:
     from yaecs import Configuration
 
 CORRUPTED_CLASSES = [0,1,7,8,9]
-class BaselineDataset(Dataset):
-    """
-    Baseline pytorch dataset for the competition data.
-    Note that it does not leverage mask information, augment the data nor normalise it in any way.
-    """
+class WholeDataset(Dataset):
 
-    def __init__(self, config: 'Configuration'):
+    def __init__(self, config: 'Configuration', transform=None):
         data_directory = os.path.dirname(os.path.abspath(config.csv_path))
         self.s1_folder = os.path.join(data_directory, "s1")
         self.s2_folder = os.path.join(data_directory, "s2")
@@ -37,13 +33,12 @@ class BaselineDataset(Dataset):
 
         self.device = config.device
         self.mode = config.mode
+        self.transform = transform
 
     def __len__(self):
         return len(self.data_paths)
 
     def __getitem__(self, index: int) -> dict:
-        """ Reads a sample from the disk and returns it in the form of a dictionary. """
-
         paths = self.data_paths[index]
         s1 = [load_image(os.path.join(self.s1_folder, i)) for i in paths]
         if self.mode == "infer":
@@ -54,16 +49,26 @@ class BaselineDataset(Dataset):
         else:
             s2 = [load_image(os.path.join(self.s2_folder, i)) for i in paths]
             masks = [load_image(os.path.join(self.masks_folder, i)) for i in paths]
-            label = s2.pop(-1)
-            label_mask = masks.pop(-1)
+            masks = np.where(np.isin(masks, CORRUPTED_CLASSES),0,1)
+            
+            image = torch.from_numpy(np.concatenate([s1[2], *s2, *masks], axis=-1).T)
+            if self.transform:
+                image = self.transform(image)
 
+        #output format C,H,W  
         return {
             "paths": paths,
-            "s1": torch.from_numpy(np.concatenate(s1, axis=-1)).to(self.device),
-            "s2": torch.from_numpy(np.concatenate(s2, axis=-1)).to(self.device),
-            "masks": torch.from_numpy(np.concatenate(masks, axis=-1)).to(self.device),
-            "label": torch.from_numpy(label).to(self.device) if label is not None else [0],
-            "label_mask": torch.from_numpy(label_mask).to(self.device) if label_mask is not None else [0],
+            "S1_t0": image[:2,:,:].float().to(self.device),
+            "S2_and_Mask_t2": torch.cat([
+                    torch.unsqueeze(image[2,:,:], dim=0), 
+                    torch.unsqueeze(image[5,:,:], dim=0)
+                ],axis=0).float().to(self.device),
+            "S2_and_Mask_t1": torch.cat([
+                    torch.unsqueeze(image[3,:,:], dim=0), 
+                    torch.unsqueeze(image[6,:,:], dim=0)
+                ],axis=0).float().to(self.device),
+            "y":  torch.unsqueeze(image[4,:,:], dim=0).float().to(self.device),
+            "y_mask":  torch.unsqueeze(image[7,:,:], dim=0).float().to(self.device),
         }
 
 class S1ToS2Dataset(Dataset):
@@ -89,6 +94,7 @@ class S1ToS2Dataset(Dataset):
 
     def __getitem__(self, index: int) -> dict:
         if self.mode == "infer":
+            #TODO: not working yet
             paths = self.data_paths[index]
             s1 = [load_image(os.path.join(self.s1_folder, i)) for i in paths]
             s2 = [load_image(os.path.join(self.s2_folder, i)) for i in paths[:-1]]
@@ -123,8 +129,20 @@ def get_dataset(config: 'Configuration') -> Dataset:
                 RandomRotation(degrees=max_rotation),
             ])
         )
+    elif config.model == "Unet":
+        max_rotation = 0 if config.mode == "infer_on_train" else 30
+        return WholeDataset(
+            config, 
+            transform=Compose([
+                Normalize(
+                    mean=[-18.22, -10.90, 1.41, 1.34, 1.30, 0, 0, 0], 
+                    std=[3.61, 2.81, 1.41, 1.47, 1.32, 1, 1, 1]
+                ),
+                RandomRotation(degrees=max_rotation),
+            ])
+        )
     else:
-        return BaselineDataset(config)
+         raise ValueError(f"Unknown model '{config.model}'.")
         
         
 def get_loader(config: 'Configuration') -> DataLoader:

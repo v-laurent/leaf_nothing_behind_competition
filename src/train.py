@@ -11,7 +11,7 @@ from .data import get_loader
 from .model import get_model
 
 
-def train(config, tracker):
+def train_S1toS2(config, tracker):
     """ Uses the config to load the data and a model, then trains the model and logs the results using the tracker. """
 
     print("Starting training.")
@@ -52,6 +52,26 @@ def train(config, tracker):
         tracker.log_scalar("loss", total_loss := train_loss, step=epoch)
         print(f"Epoch {epoch+1}/{config.number_of_epochs} : train loss = {train_loss} : val loss = {val_loss}.")
         torch.save(model.state_dict(), os.path.join(config.save_weights_under, f"epoch_{epoch}"))
+        
+def train_Unet(config, tracker):
+    
+    print("Starting training.")
+    train_dataloader, val_dataloader = get_loader(config)
+    number_of_batches = config.number_of_batches if len(train_dataloader) > config.number_of_batches > -1 else len(train_dataloader)
+    model = get_model(config)
+    loss_function = MSELoss(reduction="none")
+    
+    optimizer = Adam(model.parameters(), lr=config.learning_rate)
+
+    for epoch in range(config.number_of_epochs):
+        losses = []
+
+        for i, data in enumerate(train_dataloader):
+            if i == number_of_batches:
+                break
+            S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
+
+       
         
     
 def evaluate_model(model, dataloader):

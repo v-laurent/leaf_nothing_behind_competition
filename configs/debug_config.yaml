@@ -1,13 +1,12 @@
 # General config
 experiment_logs:  "logs/debug"
 experiment_purpose: "debugging"
-mode: "infer_on_train"
-model: "S1ToS2Model"
-weights_path: "logs/S1toS2_0/weights/epoch_17"
+mode: "train"
+model: "Unet"
 
 # Data config
-data_loader: "S1toS2Dataloader"
-batch_size: 2
+data_loader: "Unet_dataloader"
+batch_size: 100
 num_workers: 1
 
 # Training config

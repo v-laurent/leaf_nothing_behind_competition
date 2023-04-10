@@ -3,7 +3,7 @@ import torch.multiprocessing as mp
 
 from configs.config import BaselineConfig
 from src.infer import infer
-from src.train import train
+from src.train import train_S1toS2, train_Unet
 from src.infer_on_train import infer_on_train
 
 def main(config, tracker):
@@ -11,8 +11,12 @@ def main(config, tracker):
     mp.set_start_method('spawn')
 
     if config.mode == "train":
-        train(config=config, tracker=tracker)
-
+        if config.model == "Unet":
+            train_Unet(config=config, tracker=tracker)
+        elif config.model == "S1ToS2Model":
+            train_S1toS2(config=config, tracker=tracker)
+        else: 
+            raise ValueError(f"Unknown model '{config.model}'.")
     elif config.mode == "infer":
         infer(config=config)
         
