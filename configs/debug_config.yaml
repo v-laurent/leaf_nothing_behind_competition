@@ -3,13 +3,15 @@ experiment_logs:  "logs/debug"
 experiment_purpose: "debugging"
 mode: "train"
 model: "Unet"
+lamda: 2
 
 # Data config
 data_loader: "Unet_dataloader"
-batch_size: 100
+batch_size: 1
 num_workers: 1
 
 # Training config
-number_of_epochs: 1
+number_of_epochs: 2
+S1toS2_weights_path: weights/S1toS2_weights
 save_weights_under: "weights"
 number_of_batches: 1

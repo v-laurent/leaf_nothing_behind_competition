@@ -43,7 +43,7 @@ def train_S1toS2(config, tracker):
         
         model.eval()
         with torch.no_grad():
-            val_loss = evaluate_model(model, val_dataloader)
+            val_loss = evaluate_S1toS2model(model, val_dataloader)
         model.train() 
         
         add_element_to_file(config, train_loss, "train_losses.pkl")
@@ -69,12 +69,32 @@ def train_Unet(config, tracker):
         for i, data in enumerate(train_dataloader):
             if i == number_of_batches:
                 break
-            S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
-
+            _, S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
+            optimizer.zero_grad()
+            outputs = model(S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1)
+            loss = torch.mean(config.lamda*(2-y_mask) * loss_function(outputs, y))
+            loss.backward()
+            optimizer.step()
+            losses.append(loss.item())
+            if i % 100 == 99 or i+1 == number_of_batches:
+                print(f"Performed batch {i+1}/{number_of_batches}")
        
+        train_loss = sum(losses)/len(losses)
+        
+        model.eval()
+        with torch.no_grad():
+            val_loss = evaluate_Unetmodel(model, val_dataloader, config)
+        model.train() 
+        
+        add_element_to_file(config, train_loss, "train_losses.pkl")
+        add_element_to_file(config, val_loss, "val_losses.pkl")
+        
+        tracker.log_scalar("loss", total_loss := train_loss, step=epoch)
+        print(f"Epoch {epoch+1}/{config.number_of_epochs} : train loss = {train_loss} : val loss = {val_loss}.")
+        torch.save(model.state_dict(), os.path.join(config.save_weights_under, f"epoch_{epoch}"))
         
     
-def evaluate_model(model, dataloader):
+def evaluate_S1toS2model(model, dataloader):
     losses = []
     for data in dataloader:
         X,y = data["X"], data["y"]
@@ -85,6 +105,15 @@ def evaluate_model(model, dataloader):
             
     return sum(losses) / len(losses)
         
+def evaluate_Unetmodel(model, dataloader, config):
+    losses = []
+    for data in dataloader:
+        _, S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
+        outputs = model(S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1)
+        loss = torch.mean(config.lamda*(2-y_mask) * mse_loss(outputs, y, reduction='none'))
+        losses.append(loss.item())
+            
+    return sum(losses) / len(losses)
 
 def add_element_to_file(config, el, file_name):
     path = os.path.join(config.experiment_logs, file_name)

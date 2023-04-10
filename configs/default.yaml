@@ -6,6 +6,7 @@ device: !type:str gpu  # can be 'gpu' or 'cpu'
 tracker_config: !type:dict
   type: !type:str basic
 model: !type:str ""
+lamda: !type:float 2
 
 # Data config
 data_loader: !type:str "baseline_dataloader"
@@ -18,6 +19,7 @@ num_workers: !type:int 4
 # Model config
 layers_channels: !type:[int] [16, 16]
 weights_path: !type:(none,str) null
+S1toS2_weights_path: !type:(none,str) null
 
 # Training config
 learning_rate: !type:float 0.001
