@@ -4,7 +4,7 @@ import torch.multiprocessing as mp
 from configs.config import BaselineConfig
 from src.infer import infer
 from src.train import train
-
+from src.infer_on_train import infer_on_train
 
 def main(config, tracker):
 
@@ -15,7 +15,9 @@ def main(config, tracker):
 
     elif config.mode == "infer":
         infer(config=config)
-
+        
+    elif config.mode == "infer_on_train":
+        infer_on_train(config=config)
     else:
         raise ValueError(f"Unknown mode '{config.mode}'. Possible values are 'train' and 'infer'.")
 

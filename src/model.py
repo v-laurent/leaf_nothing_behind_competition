@@ -57,38 +57,23 @@ class S1toS2AutoEncoder(Module):
                 "ReLU_2": ReLU(), 
                 "Max_pool": MaxPool2d(kernel_size=2, stride=2)    
             }),
-            "Encoder_block_3": ModuleDict({
-                "Conv_1": Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding='same', device=config.device),
-                "ReLU_1": ReLU(),
-                "Conv_2": Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding='same', device=config.device),
-                "ReLU_2": ReLU(), 
-                "Max_pool": MaxPool2d(kernel_size=2, stride=2)    
-            }),
             "Encoder_block_4": ModuleDict({
-                "Conv_1": Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding='same', device=config.device),
+                "Conv_1": Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding='same', device=config.device),
                 "ReLU_1": ReLU(),   
             }),
             "Decoder_block_1": ModuleDict({
-                "Conv_1": Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding='same', device=config.device),
+                "Conv_1": Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding='same', device=config.device),
                 "ReLU_1": ReLU(),  
             }),
             "Decoder_block_2": ModuleDict({
-                "Deconv_1": ConvTranspose2d(in_channels=256, out_channels=128, kernel_size=2, stride=2, device=config.device),
-                "ReLU_1": ReLU(),
-                "Conv_1": Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding='same', device=config.device),
-                "ReLU_2": ReLU(), 
-                "Conv_2": Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding='same', device=config.device),
-                "ReLU_3": ReLU(),   
-            }),
-            "Decoder_block_3": ModuleDict({
                 "Deconv_1": ConvTranspose2d(in_channels=128, out_channels=64, kernel_size=2, stride=2, device=config.device),
                 "ReLU_1": ReLU(),
                 "Conv_1": Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding='same', device=config.device),
                 "ReLU_2": ReLU(), 
                 "Conv_2": Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding='same', device=config.device),
-                "ReLU_3": ReLU(),  
+                "ReLU_3": ReLU(),   
             }),
-            "Decoder_block_4": ModuleDict({
+            "Decoder_block_3": ModuleDict({
                 "Deconv_1": ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=2, stride=2, device=config.device),
                 "ReLU_1": ReLU(),
                 "Conv_1": Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding='same', device=config.device),
@@ -106,7 +91,7 @@ class S1toS2AutoEncoder(Module):
         x = sample.clone()
         
         #Encoder
-        for encoder_block_index in range(1,4):
+        for encoder_block_index in range(1,3):
             encoder_bloc_name = f'Encoder_block_{encoder_block_index}'
             x = self.layers[encoder_bloc_name]["ReLU_1"](self.layers[encoder_bloc_name]["Conv_1"](x))
             x = self.layers[encoder_bloc_name]["ReLU_2"](self.layers[encoder_bloc_name]["Conv_2"](x))
@@ -115,7 +100,7 @@ class S1toS2AutoEncoder(Module):
         
         #Decoder
         x = self.layers["Decoder_block_1"]["ReLU_1"](self.layers["Decoder_block_1"]["Conv_1"](x))   
-        for decoder_block_index in range(2,5):
+        for decoder_block_index in range(2,4):
             decoder_bloc_name = f'Decoder_block_{decoder_block_index}'
             x = self.layers[decoder_bloc_name]["ReLU_1"](self.layers[decoder_bloc_name]["Deconv_1"](x))
             x = self.layers[decoder_bloc_name]["ReLU_2"](self.layers[decoder_bloc_name]["Conv_1"](x))
@@ -130,6 +115,7 @@ def get_model(config: 'Configuration') -> BaselineModel:
         model = S1toS2AutoEncoder(config).float()
     else:
         model = BaselineModel(config).float()
+
 
     if config.weights_path is not None:
         model.to(config.device)

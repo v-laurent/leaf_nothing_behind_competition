@@ -1,9 +1,0 @@
-2023-04-07 18:05:29,214 : [TRACKER] Starting experiment...
-
-2023-04-07 18:05:29,215 : [INFO] Starting training.
-2023-04-07 18:07:15,498 : [INFO] Performed batch 10/10
-2023-04-07 18:07:16,924 : [INFO] Epoch 1/5 : loss = 0.930436235666275.
-2023-04-07 18:08:38,628 : [INFO] Performed batch 10/10
-2023-04-07 18:08:39,579 : [INFO] Epoch 2/5 : loss = 0.7563022136688232.
-2023-04-07 18:10:15,764 : [INFO] Performed batch 10/10
-2023-04-07 18:10:17,241 : [INFO] Epoch 3/5 : loss = 0.7693744748830795.

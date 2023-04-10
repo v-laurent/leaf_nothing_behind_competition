@@ -2,7 +2,7 @@ import os
 import pickle
     
 import torch
-from torch.nn import L1Loss, MSELoss
+from torch.nn import MSELoss
 from torch.nn.functional import mse_loss
 
 from torch.optim import Adam
@@ -19,8 +19,6 @@ def train(config, tracker):
     number_of_batches = config.number_of_batches if len(train_dataloader) > config.number_of_batches > -1 else len(train_dataloader)
     model = get_model(config)
     loss_function = MSELoss(reduction="none")
-    train_losses = []
-    val_losses = []
     
     optimizer = Adam(model.parameters(), lr=config.learning_rate)
 
@@ -42,19 +40,19 @@ def train(config, tracker):
                 print(f"Performed batch {i+1}/{number_of_batches}")
 
         train_loss = sum(losses)/len(losses)
+        
         model.eval()
         with torch.no_grad():
             val_loss = evaluate_model(model, val_dataloader)
         model.train() 
         
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
+        add_element_to_file(config, train_loss, "train_losses.pkl")
+        add_element_to_file(config, val_loss, "val_losses.pkl")
         
         tracker.log_scalar("loss", total_loss := train_loss, step=epoch)
         print(f"Epoch {epoch+1}/{config.number_of_epochs} : train loss = {train_loss} : val loss = {val_loss}.")
         torch.save(model.state_dict(), os.path.join(config.save_weights_under, f"epoch_{epoch}"))
         
-    write_losses(config, train_losses, val_losses)
     
 def evaluate_model(model, dataloader):
     losses = []
@@ -66,10 +64,16 @@ def evaluate_model(model, dataloader):
         losses.append(loss.item())
             
     return sum(losses) / len(losses)
-
-def write_losses(config, train_losses, val_losses):
-    with open(os.path.join(config.experiment_logs, "train_losses"), "wb") as f:   #Pickling
-        pickle.dump(train_losses, f)
         
-    with open(os.path.join(config.experiment_logs, "val_losses"), "wb") as f:   #Pickling
-        pickle.dump(val_losses, f)
+
+def add_element_to_file(config, el, file_name):
+    path = os.path.join(config.experiment_logs, file_name)
+    if os.path.exists(path):
+        with open(path, 'rb') as f:
+            data = pickle.load(f)
+        data.append(el)
+    else:
+        data = [el]
+    
+    with open(path, 'wb') as f:
+        pickle.dump(data, f)

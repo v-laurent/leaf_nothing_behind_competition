@@ -1,0 +1,15 @@
+# General config
+experiment_logs:  "logs/S1toS2"
+experiment_purpose: "S1toS2"
+mode: "infer_on_train"
+model: "S1ToS2Model"
+
+# Data config
+data_loader: "S1toS2Dataloader"
+batch_size: 16
+num_workers: 4
+
+# Training config
+number_of_epochs: 20
+save_weights_under: "weights"
+number_of_batches: -1

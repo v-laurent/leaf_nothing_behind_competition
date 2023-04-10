@@ -1,0 +1,8 @@
+# General config
+experiment_logs:  "infer_on_train"
+experiment_purpose: "infer_on_train"
+
+mode: "infer_on_train"
+model: "S1ToS2Model"
+weights_path: "weights/S1toS2_weights"
+

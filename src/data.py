@@ -5,8 +5,17 @@ from typing import TYPE_CHECKING
 import numpy as np
 from skimage import io
 import torch
-from torch.utils.data import Dataset, DataLoader, random_split
-from torchvision.transforms import Compose, RandomRotation, Normalize, ToTensor 
+from torch.utils.data import (
+    Dataset, 
+    DataLoader, 
+    random_split
+)
+from torchvision.transforms import (
+    Compose, 
+    RandomRotation, 
+    Normalize 
+)
+
 if TYPE_CHECKING:
     from yaecs import Configuration
 
@@ -48,8 +57,6 @@ class BaselineDataset(Dataset):
             label = s2.pop(-1)
             label_mask = masks.pop(-1)
 
-        #print_image(s1,s2,masks)
-        
         return {
             "paths": paths,
             "s1": torch.from_numpy(np.concatenate(s1, axis=-1)).to(self.device),
@@ -94,15 +101,7 @@ class S1ToS2Dataset(Dataset):
             image = torch.from_numpy(np.concatenate([s1,s2, mask], axis=-1).T)
             if self.transform:
                 image = self.transform(image)
-            
-            """
-            import matplotlib.pyplot as plt
-            for i in range(4):
-                plt.subplot(221+i)
-                plt.imshow(image[i,:,:])
-            plt.show()
-            """
-            
+
             #output format C,H,W    
             return {
                 "paths": paths,
@@ -111,47 +110,37 @@ class S1ToS2Dataset(Dataset):
                 'mask': torch.unsqueeze(image[3,:,:], dim=0).float().to(self.device)
             }
              
+def get_dataset(config: 'Configuration') -> Dataset:
+    if config.model == "S1ToS2Model":
+        max_rotation = 0 if config.mode == "infer_on_train" else 30
+        return S1ToS2Dataset(
+            config, 
+            transform=Compose([
+                Normalize(
+                    mean=[-17.97, -10.70, 1.45, 0], 
+                    std=[3.53, 2.77, 1.50, 1]
+                ),
+                RandomRotation(degrees=max_rotation),
+            ])
+        )
+    else:
+        return BaselineDataset(config)
         
         
 def get_loader(config: 'Configuration') -> DataLoader:
-    """ Get a loader for the data for batching and shuffling. """
-    if config.data_loader == "S1toS2Dataloader":
-        dataset = S1ToS2Dataset(config, 
-                                transform=Compose([
-                                            Normalize(
-                                                mean=[-17.97, -10.70, 1.45, 0], 
-                                                std=[3.53, 2.77, 1.50, 1]
-                                            ),
-                                            RandomRotation(degrees=30),
-                                        ])
-                )
-        train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
-        train_dataloader = DataLoader(
-                            train_dataset,
-                            batch_size=config.batch_size,
-                            shuffle=config.shuffle_data,
-                            num_workers=config.num_workers
-                        )
-        val_dataloader = DataLoader(
-                            val_dataset,
-                            batch_size=config.batch_size,
-                            num_workers=config.num_workers
-                        )
-    else:
-        dataset = BaselineDataset(config)
-        train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
-        train_dataloader = DataLoader(
-                            train_dataset,
-                            batch_size=config.batch_size,
-                            shuffle=config.shuffle_data,
-                            num_workers=config.num_workers
-                        )
-        val_dataloader = DataLoader(
-                            val_dataset,
-                            batch_size=config.batch_size,
-                            num_workers=config.num_workers
-                        )
-        
+    dataset = get_dataset(config)
+    train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
+    train_dataloader = DataLoader(
+                        train_dataset,
+                        batch_size=config.batch_size,
+                        shuffle=config.shuffle_data,
+                        num_workers=config.num_workers
+                    )
+    val_dataloader = DataLoader(
+                        val_dataset,
+                        batch_size=config.batch_size,
+                        num_workers=config.num_workers
+                    )
     return train_dataloader, val_dataloader
 
 
@@ -161,28 +150,3 @@ def load_image(path: str) -> np.ndarray:
     if len(image.shape) == 2:
         image = np.expand_dims(image, axis=-1)
     return image
-
-def print_image(s1,s2,masks):
-    import matplotlib.pyplot as plt
-    for i in range(3):
-        plt.subplot(431+i)
-        im = (s1[i][:,:,0]-np.min(s1[i][:,:,0])) / (np.max(s1[i][:,:,0]) - np.min(s1[i][:,:,0]))
-        plt.imshow(im)
-        
-    for i in range(3):
-        plt.subplot(434+i)
-        im = (s1[i][:,:,1]-np.min(s1[i][:,:,1])) / (np.max(s1[i][:,:,1]) - np.min(s1[i][:,:,1]))
-        plt.imshow(im)
-        
-    for i in range(2):
-        plt.subplot(437+i)
-        im = (s2[i]-np.min(s2[i])) / (np.max(s2[i]) - np.min(s2[i]))
-        plt.imshow(im)
-        
-    for i in range(2):
-        plt.subplot(4,3,10+i)
-        im = (masks[i]-np.min(masks[i])) / (np.max(masks[i]) - np.min(masks[i]))
-        plt.imshow(im)
-    
-    
-    plt.show()
