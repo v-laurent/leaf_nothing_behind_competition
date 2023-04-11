@@ -6,6 +6,7 @@ from torch.nn import MSELoss
 from torch.nn.functional import mse_loss
 
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from .data import get_loader
 from .model import get_model
@@ -21,7 +22,6 @@ def train_S1toS2(config, tracker):
     loss_function = MSELoss(reduction="none")
     
     optimizer = Adam(model.parameters(), lr=config.learning_rate)
-
     for epoch in range(config.number_of_epochs):
         losses = []
 
@@ -45,7 +45,6 @@ def train_S1toS2(config, tracker):
         with torch.no_grad():
             val_loss = evaluate_S1toS2model(model, val_dataloader)
         model.train() 
-        
         add_element_to_file(config, train_loss, "train_losses.pkl")
         add_element_to_file(config, val_loss, "val_losses.pkl")
         
@@ -62,6 +61,7 @@ def train_Unet(config, tracker):
     loss_function = MSELoss(reduction="none")
     
     optimizer = Adam(model.parameters(), lr=config.learning_rate)
+    lr_scheduler = ReduceLROnPlateau(optimizer,mode='min',factor=config.lr_factor,patience=config.patience,verbose=False)
 
     for epoch in range(config.number_of_epochs):
         losses = []
@@ -81,15 +81,17 @@ def train_Unet(config, tracker):
                 print(f"Performed batch {i+1}/{number_of_batches}")
        
         train_loss = sum(losses)/len(losses)
-        
+        #validation
         model.eval()
         with torch.no_grad():
             val_loss = evaluate_Unetmodel(model, val_dataloader, config)
         model.train() 
-        
+        #write results
+        add_element_to_file(config, optimizer.param_groups[0]['lr'], "lr.pkl")
         add_element_to_file(config, train_loss, "train_losses.pkl")
         add_element_to_file(config, val_loss, "val_losses.pkl")
         
+        lr_scheduler.step(val_loss)
         tracker.log_scalar("loss", total_loss := train_loss, step=epoch)
         print(f"Epoch {epoch+1}/{config.number_of_epochs} : train loss = {train_loss} : val loss = {val_loss}.")
         torch.save(model.state_dict(), os.path.join(config.save_weights_under, f"epoch_{epoch}"))
@@ -111,7 +113,8 @@ def evaluate_Unetmodel(model, dataloader, config):
     for data in dataloader:
         _, S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
         outputs = model(S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1)
-        loss = torch.mean(config.lamda*(2-y_mask) * mse_loss(outputs, y, reduction='none'))
+        mask_loss = torch.mul(S2_and_Mask_t2[:,1,:,:],S2_and_Mask_t1[:,1,:,:]).unsqueeze(1) + 1
+        loss = torch.mean(config.lamda * mask_loss * mse_loss(outputs, y, reduction="none"))
         losses.append(loss.item())
             
     return sum(losses) / len(losses)

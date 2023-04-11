@@ -7,6 +7,8 @@ tracker_config: !type:dict
   type: !type:str basic
 model: !type:str ""
 lamda: !type:float 2
+patience: !type:int 5
+lr_factor: !type:float 0.5
 
 # Data config
 data_loader: !type:str "baseline_dataloader"

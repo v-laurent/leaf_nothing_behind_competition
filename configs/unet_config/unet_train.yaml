@@ -1,0 +1,19 @@
+# General config
+experiment_logs:  "logs/unet_attention"
+experiment_purpose: "unet with attention first version"
+mode: "train"
+model: "Unet"
+lamda: 4
+patience: 5
+lr_factor: 0.5
+
+# Data config
+data_loader: "Unet_dataloader"
+batch_size: 16
+num_workers: 4
+
+# Training config
+number_of_epochs: 100
+S1toS2_weights_path: weights/S1toS2_weights
+save_weights_under: "weights"
+number_of_batches: -1
