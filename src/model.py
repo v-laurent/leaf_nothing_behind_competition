@@ -9,6 +9,7 @@ from torch.nn import (
     MaxPool2d, 
     ModuleDict, 
     ConvTranspose2d,
+    BatchNorm2d
 )
 
 from src.attention_layer import AttentionLayer
@@ -37,33 +38,41 @@ class UNet(Module):
             }),
             "Encoder_block_1": ModuleDict({
                 "Conv_1": Conv2d(in_channels=9, out_channels=32, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_1": BatchNorm2d(32),
                 "ReLU_1": ReLU(),
                 "Conv_2": Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_2": BatchNorm2d(32),
                 "ReLU_2": ReLU(), 
                 "Max_pool": MaxPool2d(kernel_size=2, stride=2)    
             }),
             "Encoder_block_2": ModuleDict({
                 "Conv_1": Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_1": BatchNorm2d(64),
                 "ReLU_1": ReLU(),
                 "Conv_2": Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_2": BatchNorm2d(64),
                 "ReLU_2": ReLU(), 
                 "Max_pool": MaxPool2d(kernel_size=2, stride=2)    
             }),
             "Encoder_block_4": ModuleDict({
                 "Conv_1": Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_1": BatchNorm2d(128),
                 "ReLU_1": ReLU(),   
             }),
             "Decoder_block_1": ModuleDict({
                 "Conv_1": Conv2d(in_channels=128, out_channels=64, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_1": BatchNorm2d(64),
                 "ReLU_1": ReLU(),  
             }),
             "Attention_block_2": AttentionLayer(in_channels=64),
             "Decoder_block_2": ModuleDict({
-                "Deconv_1": ConvTranspose2d(in_channels=128, out_channels=64, kernel_size=2, stride=2, device=config.device),
+                "Deconv_1": ConvTranspose2d(in_channels=128, out_channels=64, kernel_size=2, stride=2, device=config.device),  
                 "ReLU_1": ReLU(),
                 "Conv_1": Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_1": BatchNorm2d(64),
                 "ReLU_2": ReLU(), 
                 "Conv_2": Conv2d(in_channels=64, out_channels=32, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_2": BatchNorm2d(32),
                 "ReLU_3": ReLU(),   
             }),
             "Attention_block_3": AttentionLayer(in_channels=32),
@@ -71,14 +80,13 @@ class UNet(Module):
                 "Deconv_1": ConvTranspose2d(in_channels=64, out_channels=32, kernel_size=2, stride=2, device=config.device),
                 "ReLU_1": ReLU(),
                 "Conv_1": Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_1": BatchNorm2d(32),
                 "ReLU_2": ReLU(), 
                 "Conv_2": Conv2d(in_channels=32, out_channels=32, kernel_size=3, padding='same', device=config.device),
+                "Batchnorm_2": BatchNorm2d(32),
                 "ReLU_3": ReLU(),  
             }),
-            "Decoder_block_5": ModuleDict({
-                "Conv_1": Conv2d(in_channels=32, out_channels=1, kernel_size=3, padding='same', device=config.device)
-            }),
-                
+            "Final_conv": Conv2d(in_channels=32, out_channels=1, kernel_size=3, padding='same', device=config.device)
         })  
         
         #freezing the top layers
@@ -97,11 +105,15 @@ class UNet(Module):
         #Encoder
         for encoder_block_index in range(1,3):
             encoder_bloc_name = f'Encoder_block_{encoder_block_index}'
-            x = self.layers[encoder_bloc_name]["ReLU_1"](self.layers[encoder_bloc_name]["Conv_1"](x))
-            x = self.layers[encoder_bloc_name]["ReLU_2"](self.layers[encoder_bloc_name]["Conv_2"](x))
+            x = self.layers[encoder_bloc_name]["Batchnorm_1"](self.layers[encoder_bloc_name]["Conv_1"](x))
+            x = self.layers[encoder_bloc_name]["ReLU_1"](x)
+            x = self.layers[encoder_bloc_name]["Batchnorm_2"](self.layers[encoder_bloc_name]["Conv_2"](x))
+            x = self.layers[encoder_bloc_name]["ReLU_2"](x)
             x = self.layers[encoder_bloc_name]["Max_pool"](x)
             tensor_states.append(x.clone())
-        x = self.layers["Encoder_block_4"]["ReLU_1"](self.layers["Encoder_block_4"]["Conv_1"](x))
+            
+        x = self.layers["Encoder_block_4"]["Batchnorm_1"](self.layers["Encoder_block_4"]["Conv_1"](x))
+        x = self.layers["Encoder_block_4"]["ReLU_1"](x)
         
         #Decoder
         x = self.layers["Decoder_block_1"]["ReLU_1"](self.layers["Decoder_block_1"]["Conv_1"](x))   
@@ -112,9 +124,11 @@ class UNet(Module):
             x = self.layers[decoder_bloc_name]["ReLU_1"](
                 self.layers[decoder_bloc_name]["Deconv_1"]( torch.cat([x, torch.mul(attention_layer, skip_connection)], dim=1))
             )
-            x = self.layers[decoder_bloc_name]["ReLU_2"](self.layers[decoder_bloc_name]["Conv_1"](x))
-            x = self.layers[decoder_bloc_name]["ReLU_3"](self.layers[decoder_bloc_name]["Conv_2"](x))
-        x = self.layers["Decoder_block_5"]["Conv_1"](x)
+            x = self.layers[decoder_bloc_name]["Batchnorm_1"](self.layers[decoder_bloc_name]["Conv_1"](x))
+            x = self.layers[decoder_bloc_name]["ReLU_2"](x)
+            x = self.layers[decoder_bloc_name]["Batchnorm_2"](self.layers[decoder_bloc_name]["Conv_2"](x))
+            x = self.layers[decoder_bloc_name]["ReLU_3"](x)
+        x = self.layers["Final_conv"](x)
 
         return x
 
