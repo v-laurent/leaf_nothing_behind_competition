@@ -72,7 +72,8 @@ def train_Unet(config, tracker):
             _, S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
             optimizer.zero_grad()
             outputs = model(S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1)
-            loss = torch.mean(config.lamda*(2-y_mask) * loss_function(outputs, y))
+            mask_loss = torch.mul(S2_and_Mask_t2[:,1,:,:],S2_and_Mask_t1[:,1,:,:]).unsqueeze(1) + 1
+            loss = torch.mean(config.lamda * mask_loss * loss_function(outputs, y))
             loss.backward()
             optimizer.step()
             losses.append(loss.item())
