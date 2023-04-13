@@ -72,8 +72,11 @@ def train_Unet(config, tracker):
             _, S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
             optimizer.zero_grad()
             outputs = model(S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1)
-            mask_loss = torch.mul(S2_and_Mask_t2[:,1,:,:],S2_and_Mask_t1[:,1,:,:]).unsqueeze(1) + 1
-            loss = torch.mean(config.lamda * mask_loss * loss_function(outputs, y))
+            #1-> both not corrupted/2-> one corrupted/3 -> both corrupted
+            mask_loss = config.lamda * (3-(S2_and_Mask_t2[:,1,:,:]+S2_and_Mask_t1[:,1,:,:])).unsqueeze(1)
+            #to prevent the network to learn corrupted data
+            mask_loss = torch.mul(mask_loss, y_mask)
+            loss = torch.mean(mask_loss * loss_function(outputs, y))
             loss.backward()
             optimizer.step()
             losses.append(loss.item())
@@ -113,8 +116,9 @@ def evaluate_Unetmodel(model, dataloader, config):
     for data in dataloader:
         _, S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
         outputs = model(S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1)
-        mask_loss = torch.mul(S2_and_Mask_t2[:,1,:,:],S2_and_Mask_t1[:,1,:,:]).unsqueeze(1) + 1
-        loss = torch.mean(config.lamda * mask_loss * mse_loss(outputs, y, reduction="none"))
+        mask_loss = config.lamda * (3-(S2_and_Mask_t2[:,1,:,:]+S2_and_Mask_t1[:,1,:,:])).unsqueeze(1)
+        mask_loss = torch.mul(mask_loss, y_mask)
+        loss = torch.mean(mask_loss * mse_loss(outputs, y, reduction="none"))
         losses.append(loss.item())
             
     return sum(losses) / len(losses)
