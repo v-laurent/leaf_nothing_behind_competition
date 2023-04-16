@@ -3,7 +3,7 @@ experiment_logs:  "logs/unet_attention"
 experiment_purpose: "unet with attention first version"
 mode: "train"
 model: "Unet"
-lamda: 4
+lamda: 3
 patience: 5
 lr_factor: 0.5
 

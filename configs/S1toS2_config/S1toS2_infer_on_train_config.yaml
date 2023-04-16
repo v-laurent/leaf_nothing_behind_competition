@@ -1,5 +1,5 @@
 # General config
-experiment_logs:  "infer_on_train"
+experiment_logs:  "logs/infer_on_train"
 experiment_purpose: "infer_on_train"
 
 mode: "infer_on_train"

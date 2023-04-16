@@ -1,17 +1,17 @@
 # General config
 experiment_logs:  "logs/debug"
 experiment_purpose: "debugging"
-mode: "train"
+mode: "infer_on_train"
 model: "Unet"
-lamda: 2
+lamda: 4
 
 # Data config
 data_loader: "Unet_dataloader"
-batch_size: 1
+batch_size: 4
 num_workers: 1
 
 # Training config
 number_of_epochs: 2
 S1toS2_weights_path: weights/S1toS2_weights
-save_weights_under: "weights"
-number_of_batches: 1
+weights_path: weights/unet_attention
+number_of_batches: 5

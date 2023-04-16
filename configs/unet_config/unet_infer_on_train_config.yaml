@@ -1,0 +1,9 @@
+# General config
+experiment_logs:  "logs/unet_infer_on_train"
+experiment_purpose: "infer_on_train"
+mode: "infer_on_train"
+model: "Unet"
+
+# Training config
+S1toS2_weights_path: weights/S1toS2_weights
+weights_path: weights/unet_attention
