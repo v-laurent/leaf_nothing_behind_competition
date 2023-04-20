@@ -5,7 +5,7 @@ mode: !type:str "train"  # can be 'train' or 'infer'
 device: !type:str gpu  # can be 'gpu' or 'cpu'
 tracker_config: !type:dict
   type: !type:str basic
-model: !type:str ""
+model: !type:str "Unet"
 lamda: !type:float 2
 patience: !type:int 5
 lr_factor: !type:float 0.5
@@ -20,8 +20,8 @@ num_workers: !type:int 4
 
 # Model config
 layers_channels: !type:[int] [16, 16]
-weights_path: !type:(none,str) null
-S1toS2_weights_path: !type:(none,str) null
+weights_path: !type:(none,str) weights/unet_attention
+S1toS2_weights_path: !type:(none,str) weights/S1toS2_weights
 
 # Training config
 learning_rate: !type:float 0.001

@@ -44,16 +44,18 @@ class WholeDataset(Dataset):
         if self.mode == "infer":
             s2 = [load_image(os.path.join(self.s2_folder, i)) for i in paths[:-1]]
             masks = [load_image(os.path.join(self.masks_folder, i)) for i in paths[:-1]]
-            label = None
-            label_mask = None
+            masks = np.where(np.isin(masks, CORRUPTED_CLASSES),0,1)
+            label = np.zeros_like(masks[0])
+            label_mask = np.zeros_like(masks[0])
+            image = torch.from_numpy(np.concatenate([s1[2], *[*s2,label], *[*masks, label_mask] ], axis=-1).T)
         else:
             s2 = [load_image(os.path.join(self.s2_folder, i)) for i in paths]
             masks = [load_image(os.path.join(self.masks_folder, i)) for i in paths]
             masks = np.where(np.isin(masks, CORRUPTED_CLASSES),0,1)
-            
             image = torch.from_numpy(np.concatenate([s1[2], *s2, *masks], axis=-1).T)
-            if self.transform:
-                image = self.transform(image)
+            
+        if self.transform:
+            image = self.transform(image)
 
         #output format C,H,W  
         return {
@@ -118,7 +120,7 @@ class S1ToS2Dataset(Dataset):
              
 def get_dataset(config: 'Configuration') -> Dataset:
     if config.model == "S1ToS2Model":
-        max_rotation = 0 if config.mode == "infer_on_train" else 30
+        max_rotation = 0 if config.mode in ["infer_on_train", "infer"] else 30
         return S1ToS2Dataset(
             config, 
             transform=Compose([
@@ -130,7 +132,7 @@ def get_dataset(config: 'Configuration') -> Dataset:
             ])
         )
     elif config.model == "Unet":
-        max_rotation = 0 if config.mode == "infer_on_train" else 30
+        max_rotation = 0 if config.mode in ["infer_on_train", "infer"] else 30
         return WholeDataset(
             config, 
             transform=Compose([
@@ -147,6 +149,13 @@ def get_dataset(config: 'Configuration') -> Dataset:
         
 def get_loader(config: 'Configuration') -> DataLoader:
     dataset = get_dataset(config)
+    if config.mode == "infer":
+        return DataLoader(
+                        dataset,
+                        batch_size=config.batch_size,
+                        shuffle=config.shuffle_data,
+                        num_workers=config.num_workers
+                    )
     train_dataset, val_dataset = random_split(dataset, [0.8, 0.2])
     train_dataloader = DataLoader(
                         train_dataset,

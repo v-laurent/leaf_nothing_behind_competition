@@ -6,7 +6,6 @@ import numpy as np
 from .data import get_loader
 from .model import get_model
 
-
 def infer(config):
     """ Saves the prediction results in numpy format in the folder config.save_infers_under """
     loader = get_loader(config)
@@ -17,8 +16,10 @@ def infer(config):
     for i, data in enumerate(loader):
         if i == number_of_batches:
             break
-        results["paths"] += list(data["paths"][-1])
-        results["outputs"].append(model(data).detach().cpu().numpy())
+        paths, S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1, y, y_mask = data.values()
+        outputs = model(S1_t0_data, S2_and_Mask_t2, S2_and_Mask_t1)
+        results["paths"] += list(paths[-1])
+        results["outputs"].append(outputs.detach().cpu().numpy().transpose([0,3,2,1]))
         if i % 10 == 9 or i+1 == number_of_batches:
             print(f"Performed batch {i+1}/{number_of_batches}")
 
