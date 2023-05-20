@@ -5,12 +5,45 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Debug S1toS2",
             "type": "python",
             "request": "launch",
             "program": "main.py",
             "args": [
-                "--config", "configs/debug_config.yaml"
+                "--config", "configs/S1toS2_config/debug_config.yaml"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Infer On Train S1toS2",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--config", "configs/S1toS2_config/S1toS2_infer_on_train_config.yaml"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Debug Train Unet",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--config", "configs/unet_config/unet_train.yaml"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Infer On Train Unet",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "--config", "configs/unet_config/unet_infer_on_train_config.yaml"
             ],
             "console": "integratedTerminal",
             "justMyCode": true

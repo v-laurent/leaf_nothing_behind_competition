@@ -1,6 +1,6 @@
 # General config
-experiment_logs:  "logs/unet_attention"
-experiment_purpose: "unet with attention first version"
+experiment_logs: "logs/unet_attention_gcp"
+experiment_purpose: "unet with attention first version on gcp"
 mode: "train"
 model: "Unet"
 lamda: 3

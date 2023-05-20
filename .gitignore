@@ -2,3 +2,6 @@ logs/
 assignment-2023/
 .vscode/
 configs/debug_config.yaml
+configs/__pycache__/
+src/__pycache__/
+.DS_Store
